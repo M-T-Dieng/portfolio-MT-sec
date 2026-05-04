@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT | Cybersécurité</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff9d;
+    --green-dim: #00cc7a;
+    --green-glow: rgba(0,255,157,0.15);
+    --red: #ff2d55;
+    --blue: #00cfff;
+    --bg: #050a0e;
+    --bg2: #080f14;
+    --bg3: #0d1822;
+    --border: rgba(0,255,157,0.2);
+    --text: #a8c4b8;
+    --text-bright: #d4ede5;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Orbitron', sans-serif;
+    --body: 'Rajdhani', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* SCANLINES */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,157,0.015) 2px,
+      rgba(0,255,157,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 3rem;
+    background: rgba(5,10,14,0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--display);
+    font-size: 1rem;
+    color: var(--green);
+    letter-spacing: 0.2em;
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--text); }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    transition: color 0.2s;
+    position: relative;
+  }
+
+  .nav-links a::before {
+    content: '// ';
+    color: var(--green);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--green); }
+  .nav-links a:hover::before { opacity: 1; }
+
+  /* STATUS BAR */
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 0.4rem 3rem;
+    background: rgba(5,10,14,0.95);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 2rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: rgba(0,255,157,0.5);
+  }
+
+  .status-bar .blink {
+    animation: blink 1.2s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 8rem 3rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,157,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,157,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at 60% 50%, black 20%, transparent 70%);
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,255,157,0.06) 0%, transparent 70%);
+    right: -100px; top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; max-width: 700px; }
+
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--green);
+    letter-spacing: 0.3em;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .hero-tag::before {
+    content: '';
+    display: block;
+    width: 40px; height: 1px;
+    background: var(--green);
+  }
+
+  .hero-name {
+    font-family: var(--display);
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900;
+    color: var(--text-bright);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-name .accent { color: var(--green); }
+
+  .hero-title {
+    font-family: var(--mono);
+    font-size: clamp(0.85rem, 1.5vw, 1rem);
+    color: var(--green-dim);
+    margin-bottom: 2rem;
+    letter-spacing: 0.15em;
+  }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--text);
+    max-width: 520px;
+    margin-bottom: 3rem;
+    line-height: 1.8;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    padding: 0.8rem 1.8rem;
+    text-decoration: none;
+    border: 1px solid;
+    transition: all 0.25s;
+    cursor: pointer;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: var(--green);
+    color: var(--bg);
+    border-color: var(--green);
+  }
+
+  .btn-primary:hover {
+    background: transparent;
+    color: var(--green);
+    box-shadow: 0 0 20px rgba(0,255,157,0.3);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--green);
+    border-color: var(--border);
+  }
+
+  .btn-outline:hover {
+    border-color: var(--green);
+    box-shadow: 0 0 15px rgba(0,255,157,0.15);
+  }
+
+  /* TERMINAL WINDOW */
+  .terminal {
+    position: absolute;
+    right: 3rem; top: 50%;
+    transform: translateY(-50%);
+    width: 420px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(0,255,157,0.05), inset 0 0 40px rgba(0,0,0,0.3);
+    display: none;
+  }
+
+  @media (min-width: 1100px) { .terminal { display: block; } }
+
+  .terminal-bar {
+    background: var(--bg3);
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+
+  .terminal-title {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: rgba(168,196,184,0.5);
+    margin-left: auto;
+  }
+
+  .terminal-body {
+    padding: 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 2;
+  }
+
+  .t-prompt { color: var(--green); }
+  .t-cmd { color: var(--text-bright); }
+  .t-output { color: var(--text); padding-left: 1rem; }
+  .t-key { color: var(--blue); }
+  .t-val { color: #ffd166; }
+  .t-cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--green);
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  /* SECTION COMMON */
+  section { padding: 6rem 3rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--green);
+    letter-spacing: 0.2em;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 0.1em;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ABOUT */
+  #about { background: var(--bg2); }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) { .about-grid { grid-template-columns: 1fr; gap: 2rem; } }
+
+  .about-text p {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    margin-bottom: 1.2rem;
+    color: var(--text);
+  }
+
+  .about-text p strong { color: var(--green); font-weight: 600; }
+
+  .info-list { list-style: none; }
+
+  .info-list li {
+    display: flex;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(0,255,157,0.07);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+  }
+
+  .info-list .key { color: var(--green); min-width: 120px; }
+  .info-list .val { color: var(--text-bright); }
+
+  /* SKILLS */
+  #skills {}
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .skill-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .skill-card:hover {
+    border-color: var(--green);
+    box-shadow: 0 0 20px rgba(0,255,157,0.08);
+  }
+
+  .skill-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--green);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .skill-card:hover::before { opacity: 1; }
+
+  .skill-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .skill-name {
+    font-family: var(--display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid rgba(0,255,157,0.2);
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+
+  /* PROJECTS */
+  #projects { background: var(--bg2); }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .project-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1.8rem;
+    position: relative;
+    transition: all 0.3s;
+    overflow: hidden;
+  }
+
+  .project-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    background: linear-gradient(225deg, rgba(0,255,157,0.08) 0%, transparent 60%);
+    transition: opacity 0.3s;
+  }
+
+  .project-card:hover {
+    border-color: var(--green);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 20px rgba(0,255,157,0.05);
+  }
+
+  .project-status {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .status-active { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-planned { background: #555; }
+  .status-wip { background: #ffd166; box-shadow: 0 0 6px #ffd166; }
+
+  .project-title {
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+
+  .project-desc {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+  }
+
+  .project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .tech-tag {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(0,255,157,0.07);
+    border: 1px solid rgba(0,255,157,0.15);
+    color: var(--green);
+  }
+
+  .project-links {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .project-link {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .project-link:hover { color: var(--green); }
+
+  .coming-soon {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .coming-soon .project-title::after {
+    content: ' — À VENIR';
+    font-size: 0.6rem;
+    color: #555;
+    letter-spacing: 0.2em;
+  }
+
+  /* ROADMAP */
+  #roadmap {}
+
+  .roadmap-list {
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .roadmap-list::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, var(--green), rgba(0,255,157,0.1));
+  }
+
+  .roadmap-item {
+    position: relative;
+    padding: 0 0 2.5rem 2rem;
+  }
+
+  .roadmap-item::before {
+    content: '';
+    position: absolute;
+    left: -4px; top: 6px;
+    width: 9px; height: 9px;
+    border: 1px solid var(--green);
+    background: var(--bg);
+    transform: rotate(45deg);
+  }
+
+  .roadmap-item.done::before {
+    background: var(--green);
+  }
+
+  .roadmap-item.current::before {
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 5px var(--green); }
+    50% { box-shadow: 0 0 15px var(--green), 0 0 25px rgba(0,255,157,0.3); }
+  }
+
+  .roadmap-phase {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--green);
+    letter-spacing: 0.2em;
+    margin-bottom: 0.3rem;
+  }
+
+  .roadmap-title {
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .roadmap-desc {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .roadmap-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+  }
+
+  .r-tag {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid rgba(168,196,184,0.15);
+    color: var(--text);
+  }
+
+  /* CONTACT */
+  #contact { background: var(--bg2); }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
+
+  .contact-text {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text);
+    margin-bottom: 2rem;
+  }
+
+  .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: all 0.25s;
+  }
+
+  .contact-link:hover {
+    border-color: var(--green);
+    transform: translateX(4px);
+  }
+
+  .contact-link-icon {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border);
+    font-size: 1rem;
+    color: var(--green);
+  }
+
+  .contact-link-text { font-family: var(--mono); font-size: 0.8rem; }
+  .contact-link-label { color: rgba(168,196,184,0.5); font-size: 0.65rem; display: block; margin-bottom: 0.1rem; }
+  .contact-link-val { color: var(--text-bright); }
+
+  /* FORM AREA - placeholder */
+  .contact-note {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 2;
+  }
+
+  .contact-note .c-line { display: block; }
+  .contact-note .c-comment { color: rgba(0,255,157,0.4); }
+  .contact-note .c-key { color: var(--blue); }
+  .contact-note .c-str { color: #ffd166; }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem 3rem 4rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-logo {
+    font-family: var(--display);
+    font-size: 0.85rem;
+    color: var(--green);
+    letter-spacing: 0.2em;
+  }
+
+  .footer-copy {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: rgba(168,196,184,0.3);
+  }
+
+  /* ANIMATIONS */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.6s forwards;
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in:nth-child(1) { animation-delay: 0.1s; }
+  .fade-in:nth-child(2) { animation-delay: 0.2s; }
+  .fade-in:nth-child(3) { animation-delay: 0.3s; }
+  .fade-in:nth-child(4) { animation-delay: 0.4s; }
+  .fade-in:nth-child(5) { animation-delay: 0.5s; }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { gap: 1.2rem; }
+    section { padding: 4rem 1.5rem; }
+    #hero { padding: 6rem 1.5rem 4rem; }
+    .status-bar { padding: 0.4rem 1.5rem; font-size: 0.6rem; gap: 1rem; }
+    footer { padding: 2rem 1.5rem 4rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">MT<span>_SEC</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">À propos</a></li>
+    <li><a href="#skills">Compétences</a></li>
+    <li><a href="#projects">Projets</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-content">
+    <div class="hero-tag fade-in">CYBERSECURITY STUDENT · SENEGAL</div>
+    <h1 class="hero-name fade-in">Mor Tala Dieng<br><span class="accent">_</span></h1>
+    <div class="hero-title fade-in">// Étudiant en Sécurité des Systèmes &amp; Réseaux</div>
+    <p class="hero-desc fade-in">
+      Futur analyste SOC et ingénieur cybersécurité, en formation à l'UADB Bambey.
+      Passionné par la défense des systèmes, l'infrastructure Linux et la sécurité des réseaux.
+      En route vers un Master MSSI.
+    </p>
+    <div class="hero-btns fade-in">
+      <a href="#projects" class="btn btn-primary">Voir mes projets</a>
+      <a href="#contact" class="btn btn-outline">Me contacter</a>
+    </div>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <span class="terminal-title">mt@kali:~$</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="t-prompt">mt@kali:~$ </span><span class="t-cmd">whoami --verbose</span></div>
+      <div class="t-output"><span class="t-key">name</span>      : <span class="t-val">MT</span></div>
+      <div class="t-output"><span class="t-key">status</span>    : <span class="t-val">L3 SRT · UADB Bambey</span></div>
+      <div class="t-output"><span class="t-key">focus</span>     : <span class="t-val">Cybersécurité / SOC</span></div>
+      <div class="t-output"><span class="t-key">target</span>    : <span class="t-val">Master MSSI · ESP/UCAD</span></div>
+      <br>
+      <div><span class="t-prompt">mt@kali:~$ </span><span class="t-cmd">cat objectif.txt</span></div>
+      <div class="t-output">Analyste SOC → Ingénieur Cyber</div>
+      <div class="t-output">→ RSSI | Sénégal &amp; international</div>
+      <br>
+      <div><span class="t-prompt">mt@kali:~$ </span><span class="t-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">À PROPOS</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        Étudiant en <strong>Licence SRT (Systèmes, Réseaux et Télécoms)</strong> à l'Université Alioune Diop de Bambey, je me spécialise dans la cybersécurité avec pour ambition de devenir <strong>analyste SOC</strong> puis <strong>RSSI</strong>.
+      </p>
+      <p>
+        Mon parcours combine une solide base théorique en réseaux et systèmes avec une pratique autonome sur des environnements Linux, des labs de sécurité et des projets à impact réel — dont <strong>Sunu Souf</strong>, un registre foncier numérique immutable pour les communes sénégalaises.
+      </p>
+      <p>
+        Je construis mon expertise en parallèle de ma licence : labs Kali Linux, TryHackMe, veille cyber et préparation aux certifications internationales comme la <strong>CompTIA Security+</strong>.
+      </p>
+    </div>
+
+    <ul class="info-list">
+      <li><span class="key">// Formation</span><span class="val">Licence SRT · UADB Bambey</span></li>
+      <li><span class="key">// Niveau</span><span class="val">BAC+3 (en cours)</span></li>
+      <li><span class="key">// Spécialité</span><span class="val">Réseaux, Sécurité, Linux</span></li>
+      <li><span class="key">// Objectif</span><span class="val">Master MSSI · ESP/UCAD</span></li>
+      <li><span class="key">// Métier cible</span><span class="val">Analyste SOC / RSSI</span></li>
+      <li><span class="key">// Localisation</span><span class="val">Bambey, Sénégal</span></li>
+      <li><span class="key">// Langues</span><span class="val">Wolof · Français · Anglais (en cours)</span></li>
+      <li><span class="key">// Certif. cible</span><span class="val">CompTIA Security+ · CEH</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">COMPÉTENCES</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="skill-icon">🐧</div>
+      <div class="skill-name">SYSTÈMES LINUX</div>
+      <div class="skill-tags">
+        <span class="tag">Ubuntu Server</span>
+        <span class="tag">Kali Linux</span>
+        <span class="tag">Administration</span>
+        <span class="tag">Shell scripting</span>
+        <span class="tag">Nginx</span>
+        <span class="tag">SSH</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">🌐</div>
+      <div class="skill-name">RÉSEAUX</div>
+      <div class="skill-tags">
+        <span class="tag">TCP/IP</span>
+        <span class="tag">Routage</span>
+        <span class="tag">VLAN</span>
+        <span class="tag">Wireshark</span>
+        <span class="tag">Nmap</span>
+        <span class="tag">Firewalls</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">🔐</div>
+      <div class="skill-name">SÉCURITÉ OFFENSIVE <span style="font-size:0.6rem;color:#ffd166;letter-spacing:0.1em">· EN APPRENTISSAGE</span></div>
+      <div class="skill-tags">
+        <span class="tag">Kali Linux</span>
+        <span class="tag">Nmap</span>
+        <span class="tag">Wireshark</span>
+        <span class="tag">TryHackMe</span>
+        <span class="tag">Metasploit (initiation)</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">🛡️</div>
+      <div class="skill-name">SÉCURITÉ DÉFENSIVE <span style="font-size:0.6rem;color:#ffd166;letter-spacing:0.1em">· EN APPRENTISSAGE</span></div>
+      <div class="skill-tags">
+        <span class="tag">Analyse de logs</span>
+        <span class="tag">IDS/IPS (initiation)</span>
+        <span class="tag">SIEM (en cours)</span>
+        <span class="tag">Wazuh (en cours)</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">⚙️</div>
+      <div class="skill-name">DÉVELOPPEMENT & WEB</div>
+      <div class="skill-tags">
+        <span class="tag">HTML / CSS</span>
+        <span class="tag">PHP</span>
+        <span class="tag">Java</span>
+        <span class="tag">C (bases)</span>
+        <span class="tag">Git</span>
+        <span class="tag">VirtualBox</span>
+      </div>
+    </div>
+
+    <div class="skill-card">
+      <div class="skill-icon">📡</div>
+      <div class="skill-name">TÉLÉCOMMUNICATIONS</div>
+      <div class="skill-tags">
+        <span class="tag">Réseaux mobiles</span>
+        <span class="tag">Protocoles</span>
+        <span class="tag">OSI / TCP</span>
+        <span class="tag">VoIP</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">PROJETS</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="projects-grid">
+
+    <!-- SUNU SOUF - ACTIF -->
+    <div class="project-card">
+      <div class="project-status">
+        <div class="status-dot status-wip"></div>
+        <span style="color:#ffd166">EN COURS</span>
+      </div>
+      <div class="project-title">Sunu Souf — Registre Foncier Numérique</div>
+      <p class="project-desc">
+        Plateforme immutable de gestion foncière pour les communes sénégalaises. Audit trail infalsifiable, détection de conflits de propriété, consultation citoyenne. Projet Gov'athon 2026.
+      </p>
+      <div class="project-tech">
+        <span class="tech-tag">React.js / PWA</span>
+        <span class="tech-tag">FastAPI</span>
+        <span class="tech-tag">PostgreSQL + PostGIS</span>
+        <span class="tech-tag">Leaflet.js</span>
+        <span class="tech-tag">Linux / Nginx</span>
+        <span class="tech-tag">Sécurité</span>
+      </div>
+      <div class="project-links">
+        <a href="#" class="project-link">⬡ GitHub (bientôt)</a>
+        <a href="#" class="project-link">↗ Démo (bientôt)</a>
+      </div>
+    </div>
+
+    <!-- LAB KALI - À VENIR -->
+    <div class="project-card coming-soon">
+      <div class="project-status">
+        <div class="status-dot status-planned"></div>
+        <span style="color:#555">PLANIFIÉ</span>
+      </div>
+      <div class="project-title">Lab Audit Réseau</div>
+      <p class="project-desc">
+        Scan et rapport d'audit complet d'un réseau simulé sous VirtualBox. Détection de vulnérabilités, rapport CVSS, recommandations de remédiation.
+      </p>
+      <div class="project-tech">
+        <span class="tech-tag">Kali Linux</span>
+        <span class="tech-tag">Nmap</span>
+        <span class="tech-tag">Wireshark</span>
+        <span class="tech-tag">VirtualBox</span>
+      </div>
+    </div>
+
+    <!-- IDS - À VENIR -->
+    <div class="project-card coming-soon">
+      <div class="project-status">
+        <div class="status-dot status-planned"></div>
+        <span style="color:#555">PLANIFIÉ</span>
+      </div>
+      <div class="project-title">Déploiement IDS/IPS</div>
+      <p class="project-desc">
+        Mise en place d'un système de détection d'intrusion avec Snort ou Suricata sur un lab Linux. Règles personnalisées, alertes et rapport d'incidents.
+      </p>
+      <div class="project-tech">
+        <span class="tech-tag">Snort / Suricata</span>
+        <span class="tech-tag">Linux</span>
+        <span class="tech-tag">Règles IDS</span>
+        <span class="tech-tag">Logs</span>
+      </div>
+    </div>
+
+    <!-- SIEM - À VENIR -->
+    <div class="project-card coming-soon">
+      <div class="project-status">
+        <div class="status-dot status-planned"></div>
+        <span style="color:#555">PLANIFIÉ</span>
+      </div>
+      <div class="project-title">SIEM Wazuh — Mini SOC</div>
+      <p class="project-desc">
+        Déploiement d'un SIEM Wazuh avec tableau de bord d'alertes temps réel, corrélation d'événements et simulation d'incidents de sécurité.
+      </p>
+      <div class="project-tech">
+        <span class="tech-tag">Wazuh</span>
+        <span class="tech-tag">SIEM</span>
+        <span class="tech-tag">Linux</span>
+        <span class="tech-tag">SOC</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">ROADMAP</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="roadmap-list">
+
+    <div class="roadmap-item current">
+      <div class="roadmap-phase">PHASE 1 · 2026</div>
+      <div class="roadmap-title">Licence L3 + Bases Cyber</div>
+      <div class="roadmap-desc">Validation de la L3 SRT à l'UADB. Construction du lab Kali, premiers projets d'audit réseau publiés. Préparation CompTIA Security+.</div>
+      <div class="roadmap-tags">
+        <span class="r-tag">L3 SRT</span>
+        <span class="r-tag">Kali Linux</span>
+        <span class="r-tag">TryHackMe</span>
+        <span class="r-tag">Security+</span>
+        <span class="r-tag">Sunu Souf</span>
+      </div>
+    </div>
+
+    <div class="roadmap-item">
+      <div class="roadmap-phase">PHASE 2 · 2026–2027</div>
+      <div class="roadmap-title">Pré-Master + SOC Level 1</div>
+      <div class="roadmap-desc">Finaliser TryHackMe SOC Level 1. Déployer Wazuh SIEM. Candidature ESP/UCAD Master MSSI. Publication de 3 projets sur portfolio.</div>
+      <div class="roadmap-tags">
+        <span class="r-tag">TryHackMe SOC L1</span>
+        <span class="r-tag">Wazuh SIEM</span>
+        <span class="r-tag">IDS/IPS</span>
+        <span class="r-tag">Candidature ESP</span>
+      </div>
+    </div>
+
+    <div class="roadmap-item">
+      <div class="roadmap-phase">PHASE 3 · 2027–2028</div>
+      <div class="roadmap-title">Master M1 + CEH</div>
+      <div class="roadmap-desc">Master MSSI ESP/UCAD. Certification CEH ou eJPT. Stage en entreprise télécom ou bancaire. Pentest web (OWASP Top 10) publié.</div>
+      <div class="roadmap-tags">
+        <span class="r-tag">Master M1</span>
+        <span class="r-tag">CEH / eJPT</span>
+        <span class="r-tag">Pentest Web</span>
+        <span class="r-tag">Stage</span>
+      </div>
+    </div>
+
+    <div class="roadmap-item">
+      <div class="roadmap-phase">PHASE 4 · 2028–2029</div>
+      <div class="roadmap-title">Master M2 + Emploi</div>
+      <div class="roadmap-desc">Mémoire sur SOC pour PME sénégalaises. CySA+. 6 projets publiés. Entrée sur le marché comme Analyste SOC ou Ingénieur Cybersécurité.</div>
+      <div class="roadmap-tags">
+        <span class="r-tag">Master M2</span>
+        <span class="r-tag">CySA+</span>
+        <span class="r-tag">Analyste SOC</span>
+        <span class="r-tag">RSSI (objectif)</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">CONTACT</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="contact-grid">
+    <div>
+      <p class="contact-text">
+        Étudiant en cybersécurité, ouvert aux collaborations sur des projets techniques, aux opportunités de stage, et aux échanges avec des professionnels du secteur.
+      </p>
+
+      <div class="contact-links">
+        <a href="https://linkedin.com/in/TONPROFIL" class="contact-link" target="_blank">
+          <div class="contact-link-icon">in</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">// LinkedIn</span>
+            <span class="contact-link-val">https://www.linkedin.com/in/mor-tala-dieng-676667344?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/TONGITHUB" class="contact-link" target="_blank">
+          <div class="contact-link-icon">gh</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">// GitHub</span>
+            <span class="contact-link-val">https://github.com/M-T-Dieng</span>
+          </div>
+        </a>
+
+        <a href="mailto:TONEMAIL@gmail.com" class="contact-link">
+          <div class="contact-link-icon">@</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">// Email</span>
+            <span class="contact-link-val">mortaladieng404@gmail.com</span>
+          </div>
+        </a>
+
+        <a href="https://tryhackme.com/p/TONPROFIL" class="contact-link" target="_blank">
+          <div class="contact-link-icon">🎯</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">// TryHackMe</span>
+            <span class="contact-link-val"></span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="contact-note">
+      <span class="c-line c-comment">// contact.json</span>
+      <span class="c-line">{</span>
+      <span class="c-line">&nbsp;&nbsp;<span class="c-key">"disponible"</span>: <span class="c-str">"Stage & Collaboration"</span>,</span>
+      <span class="c-line">&nbsp;&nbsp;<span class="c-key">"domaines"</span>: [</span>
+      <span class="c-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-str">"Cybersécurité"</span>,</span>
+      <span class="c-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-str">"Administration systèmes"</span>,</span>
+      <span class="c-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-str">"Infrastructure Linux"</span>,</span>
+      <span class="c-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-str">"Projets civic tech"</span></span>
+      <span class="c-line">&nbsp;&nbsp;],</span>
+      <span class="c-line">&nbsp;&nbsp;<span class="c-key">"localisation"</span>: <span class="c-str">"Sénégal"</span>,</span>
+      <span class="c-line">&nbsp;&nbsp;<span class="c-key">"remote"</span>: <span class="c-str">true</span></span>
+      <span class="c-line">}</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MT_SEC</div>
+  <div class="footer-copy">© 2026 · Bambey, Sénégal · Construit à la main</div>
+</footer>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span>⬡ SYS:ONLINE</span>
+  <span>📍 BAMBEY, SN</span>
+  <span>🎯 TARGET: SOC ANALYST</span>
+  <span class="blink">█ LEARNING IN PROGRESS</span>
+</div>
+
+</body>
+</html>
